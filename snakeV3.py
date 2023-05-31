@@ -74,10 +74,12 @@ class SnakeGame:
         #Create the canvas for the game
         self.canvas = pygame.Surface((CANVASW, CANVASH))
 
-        self.initScene()
+        self.drawScene()
         #End of constructor
 
-    def initScene(self):
+    def drawScene(self):
+        self.gameSurface.fill("lightgrey")
+        self.canvas.fill("black")
         self.gameSurface.blit(self.scoreLabel,(labelInitX+scoreXOffset,labelInitY))
         self.gameSurface.blit(self.highscoreLabel,(labelInitX+highscoreXOffset,labelInitY+25))
         self.food.draw(self.canvas)
@@ -145,14 +147,7 @@ class SnakeGame:
 
             if self.gameHasStarted:
                 self.moveSnake()
-                self.gameSurface.fill("lightgrey")
-                self.gameSurface.blit(self.scoreLabel,(labelInitX+scoreXOffset,labelInitY))
-                self.gameSurface.blit(self.highscoreLabel,(labelInitX+highscoreXOffset,labelInitY+25))
-                self.canvas.fill("black")
-                self.food.draw(self.canvas)
-                self.snake.draw(self.canvas)
-                self.gameSurface.blit(self.canvas,(0,50))
-                pygame.display.update()
+                self.drawScene()
                 time.sleep(0.1)
         
         #Save highscore if beaten
