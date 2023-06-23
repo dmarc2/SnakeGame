@@ -53,7 +53,7 @@ class SnakeGame:
         pygame.init()
         self.gameSurface = pygame.display.set_mode((ROOTW,ROOTH))
         pygame.display.set_caption('Snake Game')
-        self.gameSurface.fill("lightgrey")
+        self.clock = pygame.time.Clock()
 
         self.snake = Snake("#03ed0a") #initialize the snake
         self.food = Food("red") #initialize the food
@@ -148,7 +148,7 @@ class SnakeGame:
             if self.gameHasStarted:
                 self.moveSnake()
                 self.drawScene()
-                time.sleep(0.1)
+                self.clock.tick(13)
         
         #Save highscore if beaten
         if self.highscoreWasBeaten:
