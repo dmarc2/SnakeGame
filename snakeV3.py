@@ -60,6 +60,7 @@ class SnakeGame:
         self.score = 0      #initialize player's current score to 0
         self.highscore = self.getHighscore()    #initialize highscore to score saved in file
         self.gameHasStarted = False
+        self.gameHasEnded = False
         self.keepGameRunning = True
         self.highscoreWasBeaten = False
 
@@ -71,11 +72,41 @@ class SnakeGame:
         self.scoreLabel = self.font.render('Score: ' + str(self.score),True,'black')
         self.highscoreLabel = self.font.render('High Score: ' + str(self.highscore),True,'black')
 
+        self.deathText = self.font.render('You died!',True,"Black")
+        self.playAgainText = self.font.render('Play Again',True,"Black")
+        self.exitText = self.font.render('Exit',True,"Black")
+        
+        #Create surfaces for the play again and exit buttons
+        self.playAgainBtn = pygame.Surface((130,50))
+        self.playAgainBtn.fill("lightgrey")
+        self.exitBtn = pygame.Surface((130,50))
+        self.exitBtn.fill("lightgrey")
+
+        self.playAgainBtnRect = self.playAgainBtn.get_rect()
+        self.playAgainBtnRect.x = ROOTW/2 - 60
+        self.playAgainBtnRect.y = ROOTH/2
+        self.exitBtnRect = self.exitBtn.get_rect()
+        self.exitBtnRect.x = ROOTW/2 - 60
+        self.exitBtnRect.y = ROOTH/2 + 65
+
+        #Add text to play again and exit buttons
+        self.playAgainBtn.blit(self.playAgainText,(15,10))
+        self.exitBtn.blit(self.exitText,(45,10))
+
         #Create the canvas for the game
         self.canvas = pygame.Surface((CANVASW, CANVASH))
 
         self.drawScene()
         #End of constructor
+
+    def drawEndScene(self):
+        self.scoreText = self.font.render('Your score was ' + str(self.score),True,"Black")
+        self.gameSurface.fill("red")
+        self.gameSurface.blit(self.deathText,(ROOTW/2 - 30,10))
+        self.gameSurface.blit(self.scoreText,(ROOTW/2 - 70,35))
+        self.gameSurface.blit(self.playAgainBtn,self.playAgainBtnRect)
+        self.gameSurface.blit(self.exitBtn,self.exitBtnRect)
+        pygame.display.update()
 
     def drawScene(self):
         self.gameSurface.fill("lightgrey")
@@ -109,12 +140,16 @@ class SnakeGame:
         #Check if the snake has hit itself
         for i in range(1, len(self.snake.body)):
             if self.snake.body[0].x == self.snake.body[i].x and self.snake.body[0].y == self.snake.body[i].y:
-                self.keepGameRunning = False
+                self.gameHasStarted = False
+                self.gameHasEnded = True
+                return None
 
         #Check if the snake has hit the wall
         if self.snake.body[0].x < 0 or self.snake.body[0].x >= CANVASW/BLOCK_SIZE or self.snake.body[0].y < 0 or self.snake.body[0].y >= CANVASH/BLOCK_SIZE:
-            self.keepGameRunning = False
-            
+            self.gameHasStarted = False
+            self.gameHasEnded = True
+            return None
+
         #Check if the snake has hit the food
         if self.snake.body[0].x == self.food.x and self.snake.body[0].y == self.food.y:
             #Increment score
@@ -144,15 +179,30 @@ class SnakeGame:
                     pygame.quit()
                 elif event.type == pygame.KEYDOWN:
                     self.clicked(event)
+                elif event.type == pygame.MOUSEBUTTONDOWN and self.gameHasEnded:
+                    position = pygame.mouse.get_pos()
+                    if self.exitBtnRect.collidepoint(position):
+                        self.keepGameRunning = False
+                        self.gameHasEnded = False
+                    elif self.playAgainBtnRect.collidepoint(position):
+                        self.snake = Snake("#03ed0a")
+                        self.food = Food("red")
+                        self.score = 0
+                        self.scoreLabel = self.font.render('Score: ' + str(self.score),True,'black')
+                        self.drawScene()
+                        self.gameHasEnded = False
 
             if self.gameHasStarted:
                 self.moveSnake()
                 self.drawScene()
                 self.clock.tick(13)
+            elif self.gameHasEnded:
+                self.drawEndScene()
         
         #Save highscore if beaten
         if self.highscoreWasBeaten:
             self.saveHighscore()
+
         #Close the window
         pygame.quit()
 
@@ -182,7 +232,7 @@ class SnakeGame:
             self.keepGameRunning = False
 
         #If game hasn't started, then a press of any key will start the game.
-        if not self.gameHasStarted:
+        if not self.gameHasStarted and not self.gameHasEnded:
             self.gameHasStarted = True
 
 #Main function Here!
